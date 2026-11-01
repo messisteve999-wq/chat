@@ -2,7 +2,7 @@ name: Build CHAT APK
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -19,18 +19,15 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Configure Android SDK
-        run: |
-          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install SDK packages
         run: |
-          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
-          sdkmanager --sdk_root="$ANDROID_HOME" \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -38,12 +35,11 @@ jobs:
           gradle-version: 8.11.1
 
       - name: Build debug APK
-        working-directory: CHAT
         run: gradle --no-daemon assembleDebug
 
-      - name: Upload CHAT APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: CHAT-debug-APK
-          path: CHAT/app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
