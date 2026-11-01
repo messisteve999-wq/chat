@@ -2,15 +2,12 @@ name: Build CHAT APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -23,23 +20,23 @@ jobs:
           java-version: "17"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
 
-      - name: Install Android SDK packages
+      - name: Accept licenses and install SDK
         run: |
           yes | sdkmanager --licenses
-          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.11.1
 
-      - name: Build CHAT APK
+      - name: Build debug APK
+        run: gradle --no-daemon assembleDebug
         working-directory: CHAT
-        run: gradle --no-daemon --stacktrace assembleDebug
 
       - name: Upload CHAT APK
         uses: actions/upload-artifact@v4
